@@ -7,7 +7,7 @@ import { ArrowForward, LockOutlined, Visibility, VisibilityOff } from '@mui/icon
 import { Alert, Box, Button, Divider, IconButton, InputAdornment, Link, TextField, Typography, alpha } from '@mui/material';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +15,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
 
+  // Ao montar, redireciona imediatamente para '/projects'
+  // Isso impede mostrar o formulário de login nesta página
+  // e encaminha diretamente para a listagem de projetos.
+
+  useEffect(() => {
+    router.replace('/projects');
+  }, [router]);
   const handleChange = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }));
 
