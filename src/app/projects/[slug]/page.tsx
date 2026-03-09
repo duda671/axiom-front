@@ -20,6 +20,8 @@ function MarkdownContent({ content }: { content: string }) {
   return (
     <Box
       sx={{
+        minWidth: 0,
+        overflow: 'hidden',
         '& h1, & h2, & h3, & h4': {
           fontFamily: '"Cabinet Grotesk", "DM Sans", sans-serif',
           fontWeight: 700,
@@ -27,6 +29,8 @@ function MarkdownContent({ content }: { content: string }) {
           color: 'text.primary',
           mt: 4,
           mb: 1.5,
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
         },
         '& h2': { fontSize: '1.3rem' },
         '& h3': { fontSize: '1.1rem' },
@@ -36,6 +40,8 @@ function MarkdownContent({ content }: { content: string }) {
           fontSize: '0.95rem',
           mb: 2,
           fontFamily: '"DM Sans", sans-serif',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
         },
         '& ul, & ol': {
           color: 'text.secondary',
@@ -63,6 +69,7 @@ function MarkdownContent({ content }: { content: string }) {
           p: 2.5,
           overflow: 'auto',
           mb: 3,
+          maxWidth: '100%',
           '& code': {
             background: 'none',
             border: 'none',
@@ -132,6 +139,7 @@ function StarBlock({ label, content, index }: { label: string; content: string; 
         py: 4,
         borderTop: `1px solid ${theme.palette.divider}`,
         '&:first-of-type': { borderTop: 'none', pt: 0 },
+        minWidth: 0,
       }}>
       <Box>
         <Box
@@ -156,7 +164,7 @@ function StarBlock({ label, content, index }: { label: string; content: string; 
         </Box>
       </Box>
 
-      <Box>
+      <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
         {content ? (
           <MarkdownContent content={content} />
         ) : (
