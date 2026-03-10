@@ -1,6 +1,8 @@
 'use client';
 
+import { CodeBlock } from '@/src/components/CodeBlock';
 import { useColorMode } from '@/src/components/ThemeProvider';
+import { type Locale, type Project, getProject } from '@/src/data/projects-data';
 import { ArrowBack, DarkMode, Language, LightMode } from '@mui/icons-material';
 import { Box, Chip, IconButton, Tooltip, Typography, alpha, useTheme } from '@mui/material';
 import NextLink from 'next/link';
@@ -8,7 +10,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { type Locale, type Project, getProject } from '@/src/data/projects-data';
 
 // ─────────────────────────────────────────
 // Markdown renderer
@@ -123,12 +124,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function StarBlock({ label, content, index }: { label: string; content: string; index: number }) {
   const theme = useTheme();
-  const accent = [
-    theme.palette.primary.main,
-    theme.palette.info.main,
-    theme.palette.warning.main,
-    theme.palette.success.main,
-  ][index % 4];
+  const accent = [theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.success.main][index % 4];
 
   return (
     <Box
@@ -210,7 +206,7 @@ export default function ProjectPublicPage() {
           img.onload = () => resolve(src);
           img.onerror = () => resolve(null);
           img.src = src;
-        })
+        }),
     );
     Promise.all(checks).then(results => {
       setValidImages(results.filter((s): s is string => s !== null));
@@ -446,7 +442,9 @@ export default function ProjectPublicPage() {
               component="img"
               src={project.mainImage}
               alt={translation.title}
-              onError={(e: any) => { e.currentTarget.parentElement.style.display = 'none'; }}
+              onError={(e: any) => {
+                e.currentTarget.parentElement.style.display = 'none';
+              }}
               sx={{ width: '100%', height: 'auto', display: 'block', maxHeight: 500, objectFit: 'cover' }}
             />
           </Box>
@@ -488,20 +486,38 @@ export default function ProjectPublicPage() {
                     background: 'rgba(0,0,0,0.55)',
                     backdropFilter: 'blur(8px)',
                   }}>
-                  <Typography sx={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.6rem', color: 'rgba(255,255,255,0.8)', letterSpacing: '0.08em' }}>
+                  <Typography
+                    sx={{
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: '0.6rem',
+                      color: 'rgba(255,255,255,0.8)',
+                      letterSpacing: '0.08em',
+                    }}>
                     {carouselIndex + 1} / {validImages.length}
                   </Typography>
                 </Box>
                 {/* Prev */}
                 {carouselIndex > 0 && (
                   <Box
-                    onClick={e => { e.stopPropagation(); setCarouselIndex(i => i - 1); }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setCarouselIndex(i => i - 1);
+                    }}
                     sx={{
-                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-                      width: 36, height: 36, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', transition: 'background 0.15s',
+                      position: 'absolute',
+                      left: 12,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.55)',
+                      backdropFilter: 'blur(8px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
                       '&:hover': { background: 'rgba(0,0,0,0.75)' },
                     }}>
                     <Typography sx={{ color: '#fff', fontSize: '1rem', lineHeight: 1, userSelect: 'none' }}>‹</Typography>
@@ -510,13 +526,25 @@ export default function ProjectPublicPage() {
                 {/* Next */}
                 {carouselIndex < validImages.length - 1 && (
                   <Box
-                    onClick={e => { e.stopPropagation(); setCarouselIndex(i => i + 1); }}
+                    onClick={e => {
+                      e.stopPropagation();
+                      setCarouselIndex(i => i + 1);
+                    }}
                     sx={{
-                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                      width: 36, height: 36, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', transition: 'background 0.15s',
+                      position: 'absolute',
+                      right: 12,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.55)',
+                      backdropFilter: 'blur(8px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
                       '&:hover': { background: 'rgba(0,0,0,0.75)' },
                     }}>
                     <Typography sx={{ color: '#fff', fontSize: '1rem', lineHeight: 1, userSelect: 'none' }}>›</Typography>
@@ -562,15 +590,22 @@ export default function ProjectPublicPage() {
           <SectionLabel>{locale === 'PT' ? 'DESAFIOS TÉCNICOS' : 'TECHNICAL CHALLENGES'}</SectionLabel>
           <Box sx={{ mt: 3 }}>
             {starFields.map(({ key, labelPt, labelEn }, i) => (
-              <StarBlock
-                key={key}
-                label={locale === 'PT' ? labelPt : labelEn}
-                content={translation[key] as string}
-                index={i}
-              />
+              <StarBlock key={key} label={locale === 'PT' ? labelPt : labelEn} content={translation[key] as string} index={i} />
             ))}
           </Box>
         </Box>
+
+        {/* ── CODE HIGHLIGHTS ── */}
+        {project.codeHighlights && project.codeHighlights.length > 0 && (
+          <Box sx={{ mb: 8 }}>
+            <SectionLabel>{locale === 'PT' ? 'DESTAQUES DE CÓDIGO' : 'CODE HIGHLIGHTS'}</SectionLabel>
+            <Box sx={{ mt: 3 }}>
+              {project.codeHighlights.map((highlight, i) => (
+                <CodeBlock key={i} {...highlight} locale={locale} />
+              ))}
+            </Box>
+          </Box>
+        )}
 
         {/* ── STACK ── */}
         {project.techs.length > 0 && (
@@ -603,7 +638,9 @@ export default function ProjectPublicPage() {
                       src={tech.iconUrl}
                       alt={tech.name}
                       sx={{ width: 18, height: 18, objectFit: 'contain' }}
-                      onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                      onError={(e: any) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
                   )}
                   <Typography

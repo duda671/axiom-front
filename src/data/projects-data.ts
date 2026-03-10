@@ -1,3 +1,5 @@
+import { CodeHighlight } from '../components/CodeBlock';
+
 export type Locale = 'PT' | 'EN';
 
 export interface ProjectTranslation {
@@ -19,6 +21,7 @@ export interface Project {
   tags: Array<{ id: string; namePt: string; nameEn: string }>;
   metrics: Array<{ value: string; unit: string | null; order: number; labelPt: string; labelEn: string }>;
   translations: ProjectTranslation[];
+  codeHighlights?: CodeHighlight[];
 }
 
 export const PROJECTS: Project[] = [
@@ -27,6 +30,81 @@ export const PROJECTS: Project[] = [
     featured: true,
     mainImage: '/projects/mcmv-minha-casa-minha-vida/cover.png',
     updatedAt: '2025-03-01T00:00:00.000Z',
+    codeHighlights: [
+      {
+        titlePt: 'Ordenação com desempate por decreto',
+        titleEn: 'Decree-based ranking with tiebreakers',
+        descriptionPt:
+          'Ordenação dos beneficiários seguindo os critérios do §1º e §2º do decreto municipal. Cada nível de desempate é aplicado em cascata.',
+        descriptionEn: 'Beneficiary ranking following §1 and §2 of the municipal decree. Each tiebreaker level is applied in cascade.',
+        language: 'typescript',
+        code: `private ordenar(avaliados: BeneficiarioAvaliado[]): BeneficiarioAvaliado[] {
+    return [...avaliados].sort((a, b) => {
+      // Pontuação total (decrescente)
+      if (b.qtdCriteriosTotal !== a.qtdCriteriosTotal)
+        return b.qtdCriteriosTotal - a.qtdCriteriosTotal;
+  
+      // a) Maior tempo de residência no município
+      if (b.tempoDeResidencia !== a.tempoDeResidencia)
+        return b.tempoDeResidencia - a.tempoDeResidencia;
+  
+      // b) Maior número de dependentes menores de idade
+      if (b.numeroDepMenores !== a.numeroDepMenores)
+        return b.numeroDepMenores - a.numeroDepMenores;
+  
+      // c) Menor renda familiar per capita
+      if (a.rendaPerCapita !== b.rendaPerCapita)
+        return a.rendaPerCapita - b.rendaPerCapita;
+  
+      // d) Candidato de maior idade
+      return b.idadeTitular - a.idadeTitular;
+    });
+  }`,
+      },
+      {
+        titlePt: 'Query de inaptidão documental',
+        titleEn: 'Document inaptitude query',
+        descriptionPt: 'Query SQL que identifica beneficiários com documentos exigidos porém inválidos, agrupando os motivos de inaptidão por categoria usando ARRAY_REMOVE.',
+        descriptionEn: 'SQL query that identifies beneficiaries with required but invalid documents, grouping inaptitude reasons by category using ARRAY_REMOVE.',
+        language: 'sql',
+        code: `SELECT
+      b.id,
+      ARRAY_REMOVE(ARRAY[
+        -- Identidade
+        CASE WHEN vi."RGExigido" = true AND vi."RGValido" = false THEN 'RG inválido' END,
+        CASE WHEN vi."CPFExigido" = true AND vi."CPFValido" = false THEN 'CPF inválido' END,
+        CASE WHEN vi."comprovanteEleitoralExigido" = true AND vi."comprovanteEleitoralValido" = false THEN 'Comprovante eleitoral inválido' END,
+    
+        -- Estado civil
+        CASE WHEN vec."certidaoNascimentoSolteiroExigido" = true AND vec."certidaoNascimentoSolteiroValido" = false THEN 'Certidão nascimento solteiro inválida' END,
+        CASE WHEN vec."certidaoCasamentoExigido" = true AND vec."certidaoCasamentoValido" = false THEN 'Certidão casamento inválida' END,
+        CASE WHEN vec."declaracaoUniaoEstavelExigido" = true AND vec."declaracaoUniaoEstavelValido" = false THEN 'Declaração união estável inválida' END,
+    
+        -- Declarações e comprovantes
+        CASE WHEN vdc."comprovanteRendaExigido" = true AND vdc."comprovanteRendaValido" = false THEN 'Comprovante de renda inválido' END,
+        CASE WHEN vdc."folhaResumoCadunicoExigido" = true AND vdc."folhaResumoCadunicoValido" = false THEN 'Folha resumo CadÚnico inválida' END,
+        CASE WHEN vdc."comprovanteResidenciaExigido" = true AND vdc."comprovanteResidenciaValido" = false THEN 'Comprovante de residência inválido' END,
+    
+        -- Situações especiais
+        CASE WHEN vse."laudoMedicoCidExigido" = true AND vse."laudoMedicoCidValido" = false THEN 'Laudo médico CID inválido' END,
+        CASE WHEN vse."comprovanteBpcBolsaFamiliaExigido" = true AND vse."comprovanteBpcBolsaFamiliaValido" = false THEN 'Comprovante BPC/Bolsa Família inválido' END
+      ], NULL) AS motivos_inaptidao
+    
+    FROM beneficiarios b
+    LEFT JOIN validacao_identidade vi ON vi."beneficiarioId" = b.id
+    LEFT JOIN validacao_estado_civil vec ON vec."beneficiarioId" = b.id
+    LEFT JOIN validacoes_declaracoes_comprobatorias vdc ON vdc."beneficiarioId" = b.id
+    LEFT JOIN validacao_situacao_especiais vse ON vse."beneficiarioId" = b.id
+    
+    WHERE ARRAY_REMOVE(ARRAY[
+        CASE WHEN vi."RGExigido" = true AND vi."RGValido" = false THEN 1 END,
+        -- ... demais condições
+        CASE WHEN vse."comprovanteBpcBolsaFamiliaExigido" = true AND vse."comprovanteBpcBolsaFamiliaValido" = false THEN 1 END
+    ], NULL) <> '{}'`,
+      },
+      
+    ],
+
     techs: [
       { name: 'NestJS', iconUrl: 'https://nestjs.com/img/logo-small.svg' },
       { name: 'Next.js', iconUrl: 'https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_light_background.png' },
@@ -112,7 +190,7 @@ export const PROJECTS: Project[] = [
         task: 'Desenvolver do zero o TOP (Timon Orçamento Participativo), um sistema web completo que digitalizasse todo o ciclo do orçamento participativo municipal — do cadastro de participantes e entidades até a apuração, ranking e divulgação dos resultados. O sistema foi produzido dentro de 20 dias.',
         action: `## Cadastro e Validação\n\nModelei o fluxo completo de cadastro de participantes com validações de CPF, data de nascimento, CEP, idade mínima e proteção com reCAPTCHA. Desenvolvi o módulo de cadastro institucional de entidades comunitárias com upload de documentos obrigatórios, vinculação a edital ativo e controle de unicidade de CNPJ por edital.\n\n## Motor de Propostas\n\nImplementei o motor de submissão de propostas com regras automáticas de negócio: limite por entidade, teto orçamentário por zona urbana/rural, registro de tentativas inválidas e mensagens de erro claras.\n\n## Votação Digital\n\nDesenvolvi o módulo de votação digital com controle de período oficial, validação do eleitor, comprovante visual de voto e trilha auditável de cada submissão.\n\n## Apuração e Transparência\n\nImplementei apuração automática com ranking por zona considerando quantidade de votos e orçamento disponível.\n\n\`\`\`typescript\nasync apurar(editalId: string) {\n  const votos = await this.prisma.voto.groupBy({\n    by: ['propostaId'],\n    where: { editalId },\n    _count: { propostaId: true },\n    orderBy: { _count: { propostaId: 'desc' } },\n  });\n  return this.distribuirPorZona(votos, edital.orcamentoPorZona);\n}\n\`\`\``,
         result:
-          'O processo de orçamento participativo de Timon passou de um fluxo caótico e inauditável para um ciclo padronizado, rastreável e defensável juridicamente. O TOP voltará a ser utilizado no ano de 2026.',
+          'O processo de orçamento participativo de Timon passou de um fluxo caótico e inauditável para um ciclo padronizado, rastreável e defensável juridicamente. Foram 18.350 votos apurados. TOP voltará a ser utilizado no ano de 2026.',
       },
       {
         locale: 'EN',
