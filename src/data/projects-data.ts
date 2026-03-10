@@ -450,6 +450,34 @@ export const PROJECTS: Project[] = [
           'The City Council now operates with a modern interface on top of a solid functional foundation — preserving the original backend while delivering real usability gains.',
       },
     ],
+    codeHighlights: [
+      {
+        titlePt: 'Página de detalhe de frente parlamentar',
+        titleEn: 'Parliamentary front detail page',
+        descriptionPt: 'Página pública de detalhe de frente parlamentar com listagem de membros ativos, histórico de inativos e gerenciamento via modal para superusuários.',
+        descriptionEn: 'Public detail page for parliamentary fronts with active member listing, inactive history and modal-based management for superusers.',
+        language: 'typescript',
+        code: `const ativos = membros.filter(m => !m.data_saida || m.data_saida > todayStr);
+    const historico = membros
+      .filter(m => !!m.data_saida && m.data_saida <= todayStr)
+      .sort((a, b) => (b.data_saida ?? '').localeCompare(a.data_saida ?? ''))
+      .slice(0, 10);`,
+      },
+      {
+        titlePt: 'Componente de mandatos do parlamentar',
+        titleEn: 'Parliamentarian mandates component',
+        descriptionPt: 'Tabela de mandatos com estatísticas agregadas de titular/suplente e total de votos recebidos ao longo das legislaturas.',
+        descriptionEn: 'Mandates table with aggregated statistics for titular/substitute status and total votes received across legislatures.',
+        language: 'typescript',
+        code: `const totalVotos = mandatos.reduce(
+      (total, m) => total + (m.votosRecebidos || 0),
+      0
+    );
+    
+    const titulares = mandatos.filter(m => m.parlamentarTitular).length;
+    const suplentes = mandatos.filter(m => !m.parlamentarTitular).length;`,
+      },
+    ],
   },
   {
     slug: 'etiquetix-impressao-etiquetas',
